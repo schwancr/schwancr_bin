@@ -116,11 +116,25 @@ Output:
 # Exponential functions
 
 def expon( p, x):
-	sol = p[0] * np.exp( - p[1] * x )
+	sol = p[0] * np.exp( - x / p[1] )
 	return sol
 
+def multi_expon( N, p, x ):
+    const = p[-1]
+    p = p[:-1].reshape( (N,-1) )
+    
+    sum = const
+    for i in range( N ):
+        sum += expon( p[i], x )
+
+    return sum
+    
 def exponHt1( p, x ):
 	sol = np.exp( - p[0] * x )
+	return sol
+
+def errFuncMultiExpon( p, x, y, N ):
+	sol = multi_expon( N, p, x) - y
 	return sol
 
 def errFuncExpon( p, x, y ):
@@ -157,3 +171,35 @@ Outputs:
 	else:
 		print "Error in least squares fit"
 		return -1
+
+def MultiExponFit( xDat, yDat, num_expons, LogSample = False, nPts = 1000, start_x0 = None ):
+    """
+This function fits data to an exponential. It does this with a least squares regression,
+	however you can first subsample the data with a log scale by passing LogSample = True.
+
+Inputs:
+	1) xDat - np.array with x values
+	2) yDat - np.array with y values
+	3) LogSample [ False ] - Pass this if you want to subsample the data to remove some points at large x.
+
+Outputs:
+	1) p - np.array with the parameters to this fit: p[0] * np.exp( - p[1] * x )
+    """
+
+    if LogSample:
+        ind = np.logspace( 0, np.log10( xDat.shape[0] - 1 ), nPts )
+        ind = np.unique( ind ).astype(int)
+        xDat = xDat[ ind ]
+        yDat = yDat[ ind ]
+
+    if start_x0 == None:
+        start_x0 = np.ones( 2 * num_expons + 1 )
+    
+    sol = optimize.leastsq( errFuncMultiExpon, start_x0, args = ( xDat, yDat, num_expons ),maxfev = 1000000, xtol=1E-13, ftol=1E-13, full_output=True)
+    if sol[-1] in [1,2,3,4]:
+        print sol[-2]
+        return sol[0]
+    else:
+        print "Error in least squares fit"
+        return -1
+
