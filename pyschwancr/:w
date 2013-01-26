@@ -1,0 +1,16 @@
+import numpy as np
+
+class LangevinDynamicsIntegrator():
+
+	def __init__( self, V, dV, gamma = 1, kT = 0.25 ):
+		self.V = V
+		self.dV = dV
+		self.gamma = gamma
+		self.kT = kT
+		self.positions = np.array([])
+
+		return
+	
+	def start( self, x0 ):
+		
+	
