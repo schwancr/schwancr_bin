@@ -1,0 +1,206 @@
+#!/usr/local/bin/python2.7  -tt
+
+from subprocess import *
+import sys
+from random import *
+import os
+
+structs = ['alpha','beta','random','extended']
+
+angles = { 'alpha': ( -63.97443008 , -42.99847412),
+               'extended': ( 180.0 , 180.0 ) }
+
+
+def main():
+
+    # This python script is useful for generating peptides using Ribosome
+    #    http://roselab.jhu.edu/~raj/Manuals/ribosome.html
+    #    Make sure the file is compiled and is located in your PATH
+    #    Additionally, you must edit the following line:
+    zmat = '/Users/schwancr/Ribosome/src/res.zmat'
+    #    To be the location of res.zmat from the source
+    
+    # The general scheme will be to input a sequence of amino acids 
+    #    in the form of one letter codes followed by secondary structure 
+    #    that you wish to add in the format:
+    #    struct_name residueStart residueEnd
+    #    Where the struct_name can be one of:
+    #    If a residue is not assigned a secondary structure, then the
+    #    default will be to give it an extended form.
+    #    NOTE: beta is not in this yet
+    #
+    #    Additionally you can specify phi-psi angles yourself for certain
+    #    residues by:
+    #    res_id phi psi
+    #    This can be in the same input file, in any order
+    #
+    #    SAMPLE INPUT FILE
+#----------------------
+# AAAKTYSYRSM
+# alpha 1 3
+# random 5 11 gaussian
+# 4 70 90
+#---------------------
+    #
+    # This will generate the peptide with residues 1-3 alpha helical,
+    # residue 4 with phi=70 psi= 90 and residues 5-11 with randomly
+    # assigned phi's and psi's assigned by a gaussian centered
+
+    input = open(sys.argv[1],'r')
+
+    aminoAcids = { 'A':'ALA',
+                   'R':'ARG',
+                   'N':'ASN',
+                   'D':'ASP',
+                   'C':'CYS',
+                   'E':'GLU',
+                   'Q':'GLN',
+                   'G':'GLY',
+                   'H':'HIS',
+                   'I':'ILE',
+                   'L':'LEU',
+                   'K':'LYS',
+                   'M':'MET',
+                   'F':'PHE',
+                   'P':'PRO',
+                   'S':'SER',
+                   'T':'THR',
+                   'W':'TRP',
+                   'Y':'TYR',
+                   'V':'VAL' }
+
+
+    seqAbrv = input.readline()
+    
+    seqFull = []
+    for AA in seqAbrv:
+        if AA == '\n':
+            break
+        if AA == ' ':
+            continue
+        if AA not in aminoAcids:
+            print 'Amino acid ' + AA + ' not found in dictionary'
+            exit()
+        seqFull.append(aminoAcids[AA])
+#        print aminoAcids[AA], AA
+
+    seqStructs = [ thing for thing in seqFull ]
+    
+    acidsAssigned = [] 
+    # This will keep track of which acids have already been
+    # assigned phi/psi angles, the program will quit when it is
+    # told to assign an amino acid twice
+
+    userDef = {}
+
+    for line in input:
+        if line[0] == '\n':
+            continue
+        params = line.split()
+        if params[0].lower() == 'alpha' or params[0].lower() == 'extended':
+            begin = int( params[1] )
+            end = int( params[2] ) + 1
+            # Add 1 so that the range is inclusive
+            for i in range(begin,end,1):
+                if i in acidsAssigned:
+                    print 'Amino acid ' + str(i) + ' assigned twice in input.'
+                    exit()
+                acidsAssigned.append(i)
+                seqStructs[i-1] = params[0].lower()
+        elif params[0].lower() == 'random':
+            begin = int( params[1] )
+            end = int( params[2] ) + 1
+            # Add 1 so that the range is inclusive
+            for i in range(begin,end,1):
+                if i in acidsAssigned:
+                    print 'Amino acid ' + str(i) + ' assigned twice in input.'
+                    exit()
+                acidsAssigned.append(i)
+                seqStructs[i-1] = params[3].lower()
+        # params[3] will be the type of randomly generated angles
+                # Options: gaussian, uniform (only uniform implemented now)             
+        elif len(params) == 3:
+#            print params
+            resID = int(params[0])
+            if resID in acidsAssigned:
+                print 'Amino acid ' + str(resID) + ' assigned twice in input.'
+                exit()
+
+            seqStructs[resID-1] = 'user_defined'
+            userDef[resID-1] = ( float(params[1]), float(params[2]) )
+            acidsAssigned.append(resID)
+
+    # Assign extended to everything left unassigned:
+
+    for index, AA in enumerate(seqFull):
+        if index+1 not in acidsAssigned:
+            seqStructs[index] = 'extended'
+
+#    for index, thing in enumerate(seqStructs):
+#        print index, thing
+
+
+#----------------------------------------------
+# Now I need to generate the input file to ribosome:
+#----------
+
+    ribInput = open(sys.argv[1][:-3]+'inp','w')
+
+    ribInput.write('title '+ sys.argv[1][:-4] + '\n')
+    ribInput.write('default extended\n')
+
+    for index,AA in enumerate(seqFull):
+        phi, psi = phiPsi(seqStructs[index],index,userDef)
+        line = 'res '+AA+' phi '+ str(phi) + ' psi '+str(psi)+'\n'
+        ribInput.write(line)
+        
+    ribInput.close()
+
+
+    for i in range(100):
+        fileName = sys.argv[1][:-4]+'_'+str(i)+ '.pdb'
+        if not os.path.isfile(fileName):
+            break
+
+
+    Popen(['ribosome',sys.argv[1][:-3]+'inp',fileName,zmat])
+
+    print 'Output conformation written to: ' + fileName
+
+    if 'uniform' in seqStructs or 'gaussian' in seqStructs or 'user_defined' in seqStructs:
+        print 'Random or user defined phi/psi angles can result in clashes'
+        print ' in the structure. So make sure to visually check for these'
+
+
+
+def phiPsi(structType,index,userDef):
+    if structType == 'extended' or structType == 'alpha':
+        #print angles[structType]
+        return angles[structType]
+    elif structType == 'uniform':
+        x = random()
+        y = random()
+        x = x*360.
+        if x > 180:
+            x = x - 360.
+        y = y*360.
+        if y > 180:
+            y = y - 360.
+        return x,y
+    elif structType == 'gaussian':
+        x = -1
+        while x < 0 or x > 360:
+            x = gauss(180,15)
+        if x > 180:
+            x = x - 360
+        y = -1
+        while y < 0 or y > 360:
+            y = gauss(180,15)
+        if y > 180:
+            y = y - 360
+        return x,y
+    elif structType == 'user_defined':
+        x,y = userDef[index]
+        return x,y
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,81 @@
+#!/usr/local/bin/python2.7 -tt
+
+import sys
+
+if len(sys.argv) < 2 or sys.argv[1] in ['help','--help','-h']:
+    print "\n\t This script will rewrite a pdb file using"
+    print "\tAMBER residue naming into one that can be read"
+    print "\tby PyRosetta\n"
+    print "\tThe input is a pdb file to translate\n"
+    exit()
+U = 'URA'
+A = 'RAD'
+C = 'RCY'
+G = 'RGU'
+
+atmTrans = { "O5'":"O5*",
+             "C5'":"C5*",
+             "C4'":"C4*",
+             "O4'":"O4*",
+             "C3'":"C3*",
+             "O3'":"O3*", 
+             "C2'":"C2*",
+             "O2'":"O2*",
+             "C1'":"C1*"  }
+
+resTrans = { 'RU3':U,
+             'RU5':U,
+             ' RU':U,
+             'RUN':U,
+             'RG3':G,
+             'RG5':G,
+             ' RG':G,
+             'RGN':G,
+             'RC3':C,
+             'RC5':C,
+             ' RC':C,
+             'RCN':C,
+             'RA3':A,
+             'RA5':A,
+             ' RA':A,
+             'RAN':A,
+             'HID':'HIS',
+             'HIP':'HIS' }
+
+skipList = [ 'HOH','SOL','MG','NA','CL','K','CD' ]
+
+pdbIn = open(sys.argv[1],'r')
+pdbOut = open(sys.argv[1][:-4]+'.pyRos.pdb','w')
+
+pdbLines = pdbIn.readlines()
+
+for line in pdbLines:
+
+    if line[17:20].strip() in skipList:
+        continue
+
+    if line[0:4] != 'ATOM' and line[0:6] != 'HETATM':
+        outLine = line
+    elif line[17:20] in resTrans:
+        outLine = line[:17]+resTrans[ line[17:20] ]+line[20:]
+    elif len(line.split()[3]) > 3:
+        resname = line.split()[3][1:4]
+        if resname in resTrans:
+            resname = resTrans[ resname ]
+
+        outLine = line[:17]+resname+' '+line[21:]
+    elif line.split()[3][0] != 'R':
+        outLine = line
+    else:
+        print "Cannot understand residue in line:\n\t" + line
+
+
+
+    if outLine[13:16] in atmTrans:
+        pdbOut.write(outLine[:13]+atmTrans[ outLine[13:16] ]+outLine[16:])
+    else:
+        pdbOut.write(outLine)
+print "Output written to: " + pdbOut.name
+
+pdbIn.close()
+pdbOut.close()

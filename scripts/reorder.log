@@ -1,0 +1,40 @@
+
+                         MODELLER 9.9, 2011/03/29, r7963
+
+     PROTEIN STRUCTURE MODELLING BY SATISFACTION OF SPATIAL RESTRAINTS
+
+
+                     Copyright(c) 1989-2011 Andrej Sali
+                            All Rights Reserved
+
+                             Written by A. Sali
+                               with help from
+           B. Webb, M.S. Madhusudhan, M-Y. Shen, M.A. Marti-Renom,
+                N. Eswar, F. Alber, M. Topf, B. Oliva, A. Fiser,
+                    R. Sanchez, B. Yerkovich, A. Badretdinov,
+                      F. Melo, J.P. Overington, E. Feyfant
+                 University of California, San Francisco, USA
+                    Rockefeller University, New York, USA
+                      Harvard University, Cambridge, USA
+                   Imperial Cancer Research Fund, London, UK
+              Birkbeck College, University of London, London, UK
+
+
+Kind, OS, HostName, Kernel, Processor: 4, Darwin vspm24.stanford.edu 10.7.0 i386
+Date and time of compilation         : 2011/03/29 20:15:36
+MODELLER executable type             : mac10v4-intel
+Job starting time (YY/MM/DD HH:MM:SS): 2011/06/29 15:26:25
+
+read_to_681_> topology.submodel read from topology file:        3
+read_pd_459W> Residue type  SOL not recognized. 'automodel' model building
+              will treat this residue as a rigid body.
+              To use real parameters, add the residue type to ${LIB}/restyp.lib,
+              its topology to ${LIB}/top_*.lib, and suitable forcefield
+              parameters to ${LIB}/par.lib.
+read_pd_459W> Residue type   CL not recognized. 'automodel' model building
+              will treat this residue as a rigid body.
+              To use real parameters, add the residue type to ${LIB}/restyp.lib,
+              its topology to ${LIB}/top_*.lib, and suitable forcefield
+              parameters to ${LIB}/par.lib.
+reorder_490E> MODEL residue does not have the same number of atoms as
+              CHARMM topology library residue:       13  CYS        7        6

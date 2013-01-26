@@ -1,0 +1,44 @@
+#!/usr/local/bin/python2.7 -tt
+
+import re
+from subprocess import *
+import sys
+
+# This script will read in a groFile and an input file, which right now
+# only has a list of index numbers followed by the name of the atom
+# that should be in the gro file.
+
+# The output is sys.argv[1][:-4} + "NEW" + ".gro"
+
+
+inGro = open(sys.argv[1],'r')
+
+inMod = open(sys.argv[2],'r')
+
+modAtms = {}
+
+for line in inMod:
+    temp = line.split()
+    modAtms[ temp[0].rjust(5) ] = temp[1]
+
+output = open(sys.argv[1][:-4]+'NEW.gro','w')
+
+for line in inGro:
+
+    index = line[15:20]
+
+    if index in modAtms.keys():
+        atmName = modAtms[ index ].rjust(6)
+        print "Found it!:"+index
+        outLine = line[:9] + atmName + line[15:]
+    else:
+        outLine = line
+
+    output.write(outLine)
+
+
+print "New gro file written to "+output.name
+
+inGro.close()
+inMod.close()
+output.close()

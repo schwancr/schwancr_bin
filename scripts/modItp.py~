@@ -1,0 +1,185 @@
+#!/usr/local/bin/python2.7 -tt
+
+# This script will modify a given .itp file, by adding the lines indicated in an input file:
+# Syntax:
+#
+# modItp.py input.itp input.txt
+# 
+# The script will rename input.itp to inputOLD.itp, and make a new file called input.itp
+# that will contain the modified issues.
+
+# The input file should have multiple lines that appear as:
+
+# keyword Vars
+
+# Possible keywords:
+
+keywords = ['add_angle','add_dihedral','mod_charge','mod_name','mod_name2']
+####
+# add_angle will add an angle entry at the end of the angles section with atoms
+# X,Y,Z and fcn = N
+#
+# add_angle X Y Z N
+#----------------
+# add_dihedral will add a dihedral entry, with atoms W,X,Y,Z and fcn = N
+# 
+# add_dihedral W X Y Z N
+# ----------------------
+# mod_charge will change atom X's charge to C
+# 
+# mod_charge X C
+#---------------
+# mod_name will change atom number X's name to str
+#
+# mod_name X str
+# 
+# mod_name2 will also modify the output name
+##################################################
+
+import sys
+import re
+
+# First specify which atoms need to be modified:
+
+angles = []
+dihedrals = []
+
+charges = {}
+names = {}
+names2 = {}
+
+print sys.argv[0]
+
+if re.search('help',' '.join(sys.argv)) or len(sys.argv) == 1:
+    print '\n\n'
+    print 'This function will input an itp file to be modifed as well as in input file.'
+    print ' To call the script:'
+    print 'modItp input.itp input.txt'
+    print '\n \t These are the keywords that are available for input.txt'
+    print '\nadd_angle will add an angle entry at the end of the angles section with atoms'
+    print '\tX,Y,Z and fcn = N'
+    print '\tadd_angle X Y Z N\n'
+    print 'add_dihedral will add a dihedral entry, with atoms W,X,Y,Z and fcn = N'
+    print '\tadd_dihedral W X Y Z N\n'
+    print 'mod_charge will change atom X\'s charge to C'
+    print '\tmod_charge X C\n'
+    print 'mod_name will change atom number X\'s name to str'
+    print '\tmod_name X str\n'
+    print 'mod_name2 will also modify the output name'
+    print 'mod_name2 X str\n\n'
+    exit()
+
+
+inItp = open(sys.argv[1],'r')
+
+inTxt = open(sys.argv[2],'r')
+
+
+
+for line in inTxt:
+    temp = line.split()
+
+    if temp[0] not in keywords:
+        print 'Unrecognized keyword: '+temp[0]
+        exit()
+
+    if temp[0] == 'add_angle':
+        angles.append( ( int(temp[1]), int(temp[2]), int(temp[3]), int(temp[4]) ) )
+    
+    if temp[0] == 'add_dihedral':
+        dihedrals.append( ( int(temp[1]), int(temp[2]), int(temp[3]), int(temp[4]), int(temp[5]) ) )
+        
+    if temp[0] == 'mod_charge':
+        charges[ int( temp[1] ) ] = temp[2]
+    
+    if temp[0] == 'mod_name':
+        names[ int( temp[1] ) ] = temp[2]
+
+    if temp[0] == 'mod_name2':
+        names2[ int( temp[1] ) ] = temp[2]
+
+
+# NOW: 
+#   We will go through each line and output the newline if it requires editing
+
+
+outItp = open(sys.argv[1][:-4]+'NEW'+'.itp','w')
+
+contChars = [';','\n','','P','#']
+inAtms = True
+
+
+didAngles = False
+
+for line in inItp:
+    modTest = False
+    temp = line.split()
+   
+    if line[0] in contChars:
+        outItp.write(line)
+        continue
+
+    if temp[0] == '[' and temp[1] == 'dihedrals':
+#        print 'At dihedrals'
+        if didAngles == False:
+            for angle in angles:
+                outItp.write(str(angle[0]).rjust(5))
+                outItp.write(str(angle[1]).rjust(6))
+                outItp.write(str(angle[2]).rjust(6))
+                outItp.write(str(angle[3]).rjust(6) + ' \n')
+            outItp.write('\n'+line)
+            didAngles = True
+        else:
+            for dihedral in dihedrals:
+                outItp.write(str(dihedral[0]).rjust(5))
+                outItp.write(str(dihedral[1]).rjust(6))
+                outItp.write(str(dihedral[2]).rjust(6))
+                outItp.write(str(dihedral[3]).rjust(6))
+                outItp.write(str(dihedral[4]).rjust(6) + ' \n')
+            outItp.write('\n'+line)
+        continue
+    elif temp[0] == '[' and temp[1] == 'bonds':
+        inAtms = False
+        outItp.write(line)
+        continue
+    elif temp[0] == '[':
+        outItp.write(line)
+        continue
+    
+    if int(temp[0]) in names and inAtms:
+        temp[1] = names[int(temp[0])]
+        modTest = True
+
+    if int(temp[0]) in names2 and inAtms:
+        temp[4] = names2[int(temp[0])]
+        modTest = True
+
+    if int(temp[0]) in charges and inAtms:
+        temp[6] = charges[int(temp[0])]
+        modTest = True
+
+    if modTest:
+        temp[-1] = ' '
+        temp[-2] = 'CRS'
+        outItp.write(temp[0].rjust(6))
+        outItp.write(temp[1].rjust(11))
+        outItp.write(temp[2].rjust(7))
+        outItp.write(temp[3].rjust(7))
+        outItp.write(temp[4].rjust(7))
+        outItp.write(temp[5].rjust(7))
+        outItp.write(temp[6].rjust(11))
+        outItp.write(temp[7].rjust(11))
+        outItp.write(temp[8].rjust(4))
+        outItp.write(temp[9].rjust(5))
+        outItp.write(temp[10].rjust(8) + ' \n')
+        
+    else:
+        outItp.write(line)
+
+    
+    
+print 'Output written to: '+outItp.name
+
+outItp.close()
+inItp.close()
+inTxt.close()
