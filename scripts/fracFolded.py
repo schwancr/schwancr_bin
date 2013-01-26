@@ -26,7 +26,7 @@ def main():
 	print "Loading Data..."
 	ass = Serializer.LoadData(options.ass_FN)
 	tProb = mmread(options.trans_FN)
-	Proj = Project.Project.LoadFromHDF(options.proj_FN)
+	Proj = Project.LoadFromHDF(options.proj_FN)
 	rawAry = dataIO.readData(options.raw_FN)
 	msmAry = dataIO.readData(options.msm_FN)
 
@@ -71,7 +71,7 @@ def main():
 			Fstates = array([ where( msmAry[:,1] == msmAry[:,1].min() ) ] )
 		else:
 			Fstates = array([ where( msmAry[:,1] == msmAry[:,1].max() ) ] )
-	N = time2fold_raw.max() / options.lag
+	N = time2fold_raw.max() / options.lag + 1
 	time2fold_msm = msmTools.calcFracFold( Fstates, tProb, x0, N = N )
 	datName = dataIO.writeData( [ "MSM_FractionFolded", str(options.lag) ], time2fold_msm )
 	print "Saved data to %s" % datName

@@ -1,5 +1,4 @@
-#!/usr/local/bin/python2.7 -tt
-
+#!/usr/bin/env python
 
 import sys
 import numpy

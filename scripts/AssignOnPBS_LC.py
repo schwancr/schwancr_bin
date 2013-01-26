@@ -79,7 +79,7 @@ cd $PBS_O_WORKDIR
 
 # execute commands
 %s
-""" % (name, i, i, 1, 12, "20:00:00:00", curDir, cmd)
+""" % (name, i, i, 1, 24, "20:00:00:00", curDir, cmd)
 
     fn="AssignOnPBS%s.sh" % i
     f=open(fn, 'w')
@@ -87,7 +87,7 @@ cd $PBS_O_WORKDIR
     f.close()
     print "Wrote, Submitted, Removed:", fn
     os.system("qsub -q %s %s" % (WhichQueue,fn))
-    os.system("rm %s" % fn)
+#    os.system("rm %s" % fn)
 
   return
 

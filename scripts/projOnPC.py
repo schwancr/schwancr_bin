@@ -11,9 +11,12 @@ print "Using %s to prepare the trajectory. This should NOT be a pca metric" % st
 
 Proj = Project.LoadFromHDF( options.projectfn )
 pca = Serializer.LoadFromHDF( options.pcaobject )
+
+dec_ind = np.argsort( pca['vals'] )[::-1]
+
 which_vec = int( options.pc_n )
 
-v = pca['vecs'][ :, which_vec ]
+v = pca['vecs'][ :, dec_ind[which_vec] ]
 
 print v.shape
 data = []

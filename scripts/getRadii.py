@@ -109,16 +109,21 @@ def main():
  
    if options.trj_dir:
       Proj['TrajFilePath'] = options.trj_dir
-
    outTot = np.array([])
    for state in Ind:
+      print outTot.shape
       print "Analyzing state %d" % state
       traj = getConfs( state, Ass, Proj )
       out = analyzeTrajectory( traj )
       np.save('./state%d.npy'%state,out )
       print "Wrote output to %s. Output had shape: " % ( './state%d.npy'%state ) + str( out.shape )
-      outTot = np.concatenate( outTot, out )
+      if outTot.any():
+         outTot = np.concatenate( (outTot, out) )
+      else:
+         outTot = out
+   np.save( 'AllStates.npy', outTot )
    return 0
+
 
 if __name__=='__main__':
    main()      

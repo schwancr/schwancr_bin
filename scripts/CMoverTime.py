@@ -18,7 +18,13 @@ from pyschwancr import msmTools, dataIO
 trajFNs = [ fn for fn in os.listdir( options.trj_dir ) if re.search( '^trj\d+\.lh5', fn ) ]
 Aind = dataIO.readData( options.Aind ).astype(int)
 
-for fn in trajFNs[:1]:
+if os.path.isdir( options.write_dir ):
+   print "Directory exists! Exiting..."
+   exit()
+else:
+   os.mkdir( options.write_dir )
+
+for fn in trajFNs:
    print "Working on %s" % fn,
    traj = Trajectory.Trajectory.LoadFromLHDF( os.path.join( options.trj_dir, fn ) )
    traj.RestrictAtomIndices( Aind ) # Restrict atom indices
@@ -26,6 +32,6 @@ for fn in trajFNs[:1]:
    ContactMaps = msmTools.calcContacts( traj, cutoff = options.cutoff, procs = options.procs )
 
    np.save( os.path.join( options.write_dir, fn[:-3]+'npy' ), ContactMaps )
-   print "Saved data to %s" % (os.path.join( options.write_dir, fn[:-3]+'npy' ))
+   print "   Saved data to %s" % (os.path.join( options.write_dir, fn[:-3]+'npy' ))
 
 

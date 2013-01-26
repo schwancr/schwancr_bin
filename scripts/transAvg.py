@@ -10,7 +10,7 @@ parser.add_option('-o','--output-file',dest='outFN',help='Output (flat-txt) file
 options, args = parser.parse_args()
 
 from numpy import *
-
+from pyschwancr import dataIO
 
 # First load map and check if anything was even trimmed...
 M = loadtxt(options.mapFN)
@@ -26,11 +26,17 @@ elif options.inFN.split('.')[-1] in [ 'txt','dat' ]:
 else:
 	outFN = options.inFN + '.Fixed.dat'
 
-data = loadtxt(options.inFN)
+data = dataIO.readData( options.inFN )
 
 outList = []
+
 for index, line in enumerate(data):
 	if M[index] >= 0:
 		outList.append( line )
 
-savetxt( outFN, array(outList) )
+outList = array( outList )
+
+if outList.dtype in [ complex, complex64, complex128 ]:
+	save( outFN[:-4]+'.npy', outList )
+else:
+	savetxt( outFN, array(outList) )
