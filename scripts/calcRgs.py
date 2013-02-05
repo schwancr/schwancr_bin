@@ -9,25 +9,21 @@ options, args = parser.parse_args()
  
 from numpy import *
 from msmbuilder import Trajectory
-from pyschwancr import dataIO, msmTools
+from msmbuilder.geometry import rg
 import os, sys, re
-import matplotlib
-matplotlib.use('agg')
-from matplotlib.pyplot import *
 import multiprocessing as mp
-from time import time
 
 def analyzeTraj( trjFN ):
 
 	print "Working on trajectory %s" % trjFN
-	trj = Trajectory.Trajectory.LoadFromLHDF( trjFN )
+	trj = Trajectory.load_from_lhdf(trjFN)
 
-	return msmTools.calcRg( trj )
+	return rg.calculate_rg(trj['XYZList'])
 	
 trajFNs = [ ( int( thing[3:-4] ), thing ) for thing in os.listdir( options.traj_dir ) if re.search( '^trj\d+\.lh5', thing ) ]
 trajFNs.sort()
 trajFNs = [ os.path.join( options.traj_dir, b ) for (a,b) in trajFNs ]
-print "Loaded Data."
+
 maxLength = 0
 Rgs = []
 

@@ -107,7 +107,7 @@ for i,fn in enumerate(options.dataFNs):
    else:
       scatter(dat[:,0], dat[:,1],s=markerSize,c=np.array([i]*len(dat)),marker=Markers[i%len(Markers)],norm=colors,label=labels[i],edgecolor='none',cmap=myCM)
    
-lg=legend(loc=2,prop={'size':options.font_size})  # lower right
+lg=legend(loc=4,prop={'size':options.font_size})  # lower right
 #lg=legend(loc=2,prop={'size':options.font_size}) # upper left
 #lg.get_frame().set_facecolor('#cdc9c9')
 ax = gca()

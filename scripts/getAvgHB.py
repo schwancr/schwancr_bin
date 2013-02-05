@@ -12,25 +12,20 @@ args = parser.parse_args()
 import numpy as np
 import matplotlib
 matplotlib.use('pdf')
-from msmbuilder import Serializer, Project, metrics, Conformation
-from schwancrtools.Trajectory_crs import Trajectory
+from msmbuilder import io, Project, metrics, Conformation, Trajectory
 from schwancrtools import metric_HB
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.pyplot import *
-from pyschwancr import dataIO
 import os, sys, re
  
-Proj = Project.LoadFromHDF( args.proj_FN )
-Ass = Serializer.LoadData( args.ass_FN )
+Proj = Project.load_from( args.proj_FN )
+try: Ass = io.loadh( args.ass_FN )['arr_0']
+except: Ass = io.loadh( args.ass_FN )['Data']
 
 HB = metric_HB.HydrogenBond()
 
-try: pdb = Trajectory.LoadFromPDB( Proj['ConfFilename'] )
-except: 
-   try: pdb = Trajectory.LoadFromPDB( os.path.join( Proj['ProjectRootDir'], Proj['ConfFilename'] ) )
-   except: 
-      print "Cannot load conf filename, as a pdb, to get atom names..." 
-      exit()
+pdb = Trajectory.load_from_pdb( Proj.conf_filename )
+
 donorH_ainds = np.where( ( (pdb['AtomNames'] == 'H')|(pdb['AtomNames'] =='HN' ) )&(pdb['ResidueNames']!='PRO') )[0] # _ainds correspond to atom indices in the trajectory
 donor_ainds = np.where( (pdb['AtomNames'] == 'N')&(pdb['ResidueNames']!='PRO') )[0]
 acceptor_ainds = np.where( pdb['AtomNames'] == 'O' )[0] # This excludes the C-Terminus which has naming issues...
@@ -46,7 +41,7 @@ CMs_1d = np.zeros( ( Ass.max()+1, ppdb.shape[1] ) )
 if os.path.exists( args.out_cm ):
    print "Data file exists, will use it and just re-plot the data"
 
-   output_dict = Serializer.LoadFromHDF( args.out_cm )
+   output_dict = io.loadh( args.out_cm )
    triples = output_dict['donor_h_acceptor_ainds']
    CMs = output_dict['HB_maps']
 else:
@@ -62,8 +57,9 @@ chunk_size=10000
 if CMs == None:
 
    for traj_ind in xrange( Ass.shape[0] ):
-      print "Working on %s" % Proj.GetTrajFilename(traj_ind) 
-      for chunk_ind, trj_chunk in enumerate(Trajectory.EnumChunksFromLHDF( Proj.GetTrajFilename(traj_ind), ChunkSize=chunk_size, AtomIndices=atom_indices ) ):
+      print "Working on %s" % Proj.traj_filename(traj_ind) 
+      for chunk_ind, trj_chunk in enumerate(Trajectory.enum_chunks_from_lhdf( Proj.traj_filename(traj_ind), 
+                                            ChunkSize=chunk_size, AtomIndices=atom_indices ) ):
          print "chunked"
          ptrj_chunk = HB.prepare_trajectory( trj_chunk ).astype(float)
          ass_chunk = Ass[traj_ind][ chunk_ind*chunk_size : (chunk_ind+1)*chunk_size ] # this behaves as you want at the end of the array
@@ -80,7 +76,7 @@ if CMs == None:
    CMs = AvgCMs_1d.reshape( (-1,num_donors,num_acceptors),order='C')
 
    triples = HB.get_angle_list()
-   Serializer( { 'donor_h_acceptor_ainds':triples, 'HB_maps':np.array(CMs) } ).SaveToHDF( args.out_cm )
+   io.saveh(args.out_cm, donor_h_acceptor_ainds=triples, HB_maps=np.array(CMs))
 #CMs = [ avg_cm.reshape( (num_donors, num_acceptors ), order='C') for avg_cm in AvgCMs_1d ]
 
 num_acceptors = len( np.unique( triples[:,2] ) )
@@ -103,7 +99,7 @@ donor_resIDs = pdb['ResidueID'][ donor_ainds ]
 donorH_resIDs = pdb['ResidueID'][ donorH_ainds ]
 acceptor_resIDs = pdb['ResidueID'][ acceptor_ainds ]
 
-nat_pdb = Trajectory.LoadTrajectoryFile( args.nat_FN )
+nat_pdb = Trajectory.load_from_pdb( args.nat_FN )
 
 CM_pdb = HB.prepare_trajectory( nat_pdb )
 

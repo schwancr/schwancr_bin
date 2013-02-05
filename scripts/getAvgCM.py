@@ -13,15 +13,15 @@ args = parser.parse_args()
 import numpy as np
 import matplotlib
 matplotlib.use('pdf')
-from msmbuilder import Serializer, Project, metrics, Trajectory
+from msmbuilder import io, Project, metrics, Trajectory
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.pyplot import *
-from pyschwancr import dataIO
 import os, sys, re
  
-nat_pdb = Trajectory.LoadFromPDB( args.pdb_FN )
-Proj = Project.LoadFromHDF( args.proj_FN )
-Ass = Serializer.LoadData( args.ass_FN )
+nat_pdb = Trajectory.load_from_pdb( args.pdb_FN )
+Proj = Project.load_from( args.proj_FN )
+try: Ass = io.loadh(args.ass_FN)['Data']
+except: Ass = io.loadh(args.ass_FN)['arr_0']
 
 if args.cutoffs != None:
    cuts = np.loadtxt( args.cutoffs )
@@ -55,8 +55,8 @@ if os.path.exists( args.out_cm ):
    AvgCMs_1d = np.array([ r.flatten(order='C') for r in CMs ]) # THIS DOES NOT WORK!!!
 else:
    for traj_ind in xrange( Ass.shape[0] ):
-      print "Working on %s" % Proj.GetTrajFilename(traj_ind) 
-      Traj = Proj.LoadTraj( traj_ind )
+      print "Working on %s" % Proj.traj_filename(traj_ind) 
+      Traj = Proj.load_traj( traj_ind )
       pTraj = BoolCont.prepare_trajectory( Traj ).astype(float)
       n_res = np.unique( Traj['ResidueID'] ).shape[0]
       del Traj
