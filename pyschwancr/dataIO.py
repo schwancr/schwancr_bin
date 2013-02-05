@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from numpy import *
-from msmbuilder import Trajectory, Serializer
+from msmbuilder import Trajectory, io
 from matplotlib.backends import backend_pdf
 from matplotlib.pyplot import *
 import os, re, sys
@@ -21,9 +21,11 @@ Additionally if the filename is lh5 it will load the data as a Trajectory.Trajec
 	if FN.split('.')[-1] == 'npy':
 		data = load(FN)
 	elif FN.split('.')[-1] == 'lh5': # Assume this is a trajectory in msmbuilder
-		data = Trajectory.Trajectory.LoadFromLHDF( FN )['XYZList'] # Only return the coordinates.
+		data = Trajectory.load_from_lhdf( FN )['XYZList'] # Only return the coordinates.
 	elif FN.split('.')[-1] == 'h5':
-		data = Serializer.LoadData( FN )
+		data = io.loadh( FN )
+        try: data = data['arr_0']
+        except: data = data['Data']
 		data = data[ where( data != -1 ) ]
 	else:
 		try:
