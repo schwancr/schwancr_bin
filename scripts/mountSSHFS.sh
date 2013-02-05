@@ -5,10 +5,15 @@
 #TARGETS=(~/vspg13b ~/vspg14c ~/vspm24 ~/vspm24_d3 ~/cert)
 #USERS=(server server schwancr schwancr schwancr)
 
-MACHINES=(vspm24 vspm24 vsp12a vsp12b)
-DIRS=("" /Volumes "server2/data/SVR1716710858" "server2/data/SVR1716710859")
-TARGETS=(~/vspm24 ~/vspm24_vol ~/vsp12a ~/vsp12b)
-USERS=(schwancr schwancr server server)
+MACHINES=(vspm24 vspm24)
+DIRS=("" /Volumes)
+TARGETS=(~/vspm24 ~/vspm24_vol)
+USERS=(schwancr schwancr)
+
+#MACHINES=(vspm24 vspm24 vsp12a vsp12b)
+#DIRS=("" /Volumes "server2/data/SVR1716710858" "server2/data/SVR1716710859")
+#TARGETS=(~/vspm24 ~/vspm24_vol ~/vsp12a ~/vsp12b)
+#USERS=(schwancr schwancr server server)
 
 #MACHINES=(vspm24 vspm24 vspg14b vspm44)
 #DIRS=("" /Volumes "server2/data/SVR1716465104" /Volumes)
