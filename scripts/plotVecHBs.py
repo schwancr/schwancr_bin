@@ -15,7 +15,7 @@ import numpy as np
 from scipy.io import mmread
 import matplotlib
 matplotlib.use('pdf')
-from msmbuilder import Serializer, metrics, Trajectory, MSMLib
+from msmbuilder import io, metrics, Trajectory, MSMLib
 from schwancrtools import metric_HB
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.pyplot import *
@@ -27,14 +27,14 @@ pp = PdfPages( args.out_plot )
 
 HB = metric_HB.HydrogenBond()
 
-input_dict = Serializer.LoadFromHDF( args.in_cm )
+input_dict = io.loadh( args.in_cm )
 triples = input_dict['donor_h_acceptor_ainds']
 CMs = input_dict['HB_maps']
 
 num_acceptors = len( np.unique( triples[:,2] ) )
 num_donors = len( np.unique( triples[:,0] ) )
 
-nat_pdb = Trajectory.LoadTrajectoryFile( args.nat_FN )
+nat_pdb = Trajectory.load_from_pdb( args.nat_FN )
 T = mmread( args.tProb )
 n_res = np.unique( nat_pdb['ResidueID'] ).shape[0]
 CM_pdb = HB.prepare_trajectory( nat_pdb )
