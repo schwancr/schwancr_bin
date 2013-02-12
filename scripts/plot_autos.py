@@ -19,8 +19,10 @@ parser.add_argument('-a', dest='avg_msm_data')
 parser.add_argument('-o', dest='output', default='Autos.pdf', 
                     help='Output plot (pdf)')
 parser.add_argument('-n', dest='num_modes', type=int, default=100)
-parser.add_argument('-l', dest='lagtime', type=int, default=1)
-parser.add_argument('--divisor', dest='divisor', type=float, default=1)
+parser.add_argument('-l', dest='lagtime', type=int, default=1,
+                    help='Lag time in units of (--units)')
+parser.add_argument('--divisor', dest='divisor', type=float, default=1,
+                    help='Divisor to convert frames -> time units in the raw data.')
 parser.add_argument('--units', dest='units', default='frames')
 
 args = parser.parse_args()
