@@ -65,7 +65,7 @@ def run(lag_time, assignments_list, symmetrize='MLE', input_mapping="None",
                                            for ass in assignments_list])).shape[0]
 
     counts = MSMLib.get_count_matrix_from_assignments(assignments_list[0], 
-                                                      n_states=num_states,
+                                                      n_states=None,
                                                       lag_time=lag_time, 
                                                       sliding_window=False)
 

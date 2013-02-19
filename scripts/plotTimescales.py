@@ -12,6 +12,7 @@ parser.add_argument('--x-label',dest='x_lbl',help='x-axis label [ OPTIONAL ]')
 parser.add_argument('--title',dest='title',help='Title for plot [ OPTIONAL ]')
 parser.add_argument('--y-lim',dest='y_lim',nargs=2,type=float,help='y-limits if you want to choose them',default=None)
 parser.add_argument('--print-not-calc',dest='print_not_calc',default=False,action='store_true',help='Pass this flag if you want to print "Not Calculated in the empty space at the bottom of the graph')
+parser.add_argument('--color', dest='color', default='blue', help='color of lines.')
 options = parser.parse_args()
  
 import matplotlib
@@ -44,7 +45,7 @@ figure()
 subplot(132)
 
 Taus = - options.lag / options.divisor / np.log( Vals )
-hlines( Taus, 0, 1, color='blue')
+hlines( Taus, 0, 1, color=options.color)
 if options.y_lim == None:
    ylim([10**int(np.log10(Taus.min())),10**int(np.log10(Taus.max())+1)])
 else:

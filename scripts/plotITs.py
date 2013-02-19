@@ -10,7 +10,7 @@ parser.add_argument('--units',dest='units',default='frames',help='Units to print
 parser.add_argument('--slowest',dest='slowest',default=False,action='store_true',help='Pass this flag to only plot the slowest timescale')
 parser.add_argument('--y-lim',dest='y_lim',default=None,type=float,nargs=2,help='Two values corresponding to the limits for the y axis')
 parser.add_argument('--x-lim',dest='x_lim',default=None,type=float,nargs=2,help='Two values corresponding to the limits for the x axis')
-parser.add_argument('--font-size',dest='font_size',type=int,help='Font size to use.')
+parser.add_argument('--font-size',dest='font_size',default=22, type=int,help='Font size to use.')
 parser.add_argument('--top-N',dest='top_N',type=int,default=-1,help='Only plot the top N timescales (-1 means plot all)')
 parser.add_argument('--plot-line',dest='plot_line',default=False,action='store_true',help='Pass this flag if you want a line plot instead of a scatter plot')
 parser.add_argument('--lin-scale',dest='lin_scale',default=False, action='store_true', help='Pass this flag if you want the y-scaled linearly. Default is log-scale.')
