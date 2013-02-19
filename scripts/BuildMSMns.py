@@ -61,9 +61,10 @@ def run(lag_time, assignments_list, symmetrize='MLE', input_mapping="None",
 
     n_assigns_before_trim = get_num_assignments(assignments_list)
 
-    num_states = np.unique(np.concatenate([ np.unique(ass[np.where(ass != -1)]) 
-                                           for ass in assignments_list])).shape[0]
+    #num_states = np.unique(np.concatenate([ np.unique(ass[np.where(ass != -1)]) 
+    #                                       for ass in assignments_list])).shape[0]
 
+    num_states = np.max([np.max(ass) for ass in assignments_list]) + 1
     counts = MSMLib.get_count_matrix_from_assignments(assignments_list[0], 
                                                       n_states=None,
                                                       lag_time=lag_time, 
