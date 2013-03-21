@@ -8,13 +8,13 @@ DTYPE_FLOAT = np.float
 ctypedef np.int_t DTYPE_INT_t
 ctypedef np.float_t DTYPE_FLOAT_t
 
-@cython.boundscheck(False) # turn off bounds checking for entire function
+#@cython.boundscheck(False) # turn off bounds checking for entire function
 def state_sums(np.ndarray[DTYPE_INT_t, ndim=1] flat_assigns, 
                np.ndarray[DTYPE_FLOAT_t, ndim=1] flat_data):
 
     assert len(flat_assigns) == len(flat_data)
 
-    cdef int N = np.max(flat_assigns)
+    cdef int N = np.max(flat_assigns) + 1
     cdef int length = len(flat_assigns)
     cdef unsigned int i
     cdef np.ndarray[DTYPE_FLOAT_t, ndim=1] running_sum = np.zeros(N, dtype=DTYPE_FLOAT)
@@ -30,7 +30,7 @@ def state_sums(np.ndarray[DTYPE_INT_t, ndim=1] flat_assigns,
             continue
 
         running_sum[cur_state] += cur_data
-        running_sum_sqr[cur_state] += cur_data
+        running_sum_sqr[cur_state] += cur_data * cur_data
 
     return running_sum, running_sum_sqr
 
