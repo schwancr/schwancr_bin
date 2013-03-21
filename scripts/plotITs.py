@@ -26,7 +26,8 @@ if options.font_size != None:
    matplotlib.rcParams['font.size'] = options.font_size
 matplotlib.rcParams['axes.formatter.limits'] = (-1,4)
 
-ManualColors = [ 'blue', 'green', 'purple','orange','yellow' ]
+man_colors = True
+ManualColors = [ 'blue', 'red', 'purple','orange','yellow' ]
 
 #myTicker2 = SchwancrFormatter(useMathText=True,useOffset=False,precision=2)
 myTicker2 = SchwancrFormatter(useMathText=True,useOffset=False,precision=0)
@@ -49,7 +50,6 @@ axes( (h,h,1-2*h,1-2*h) )
 gca().xaxis.set_major_formatter( myTicker2 )
 gca().yaxis.set_major_formatter( myTicker2 )
 
-man_colors = False
 if len(options.dataFNs) <= len( ManualColors ):
    man_colors = True
 
@@ -93,7 +93,7 @@ for i,fn in enumerate(options.dataFNs):
          plot(dat[::num_vals,0],dat[::num_vals,1],lw=line_width,color=ManualColors[i], alpha=a )
       else:
          #plot(dat[::num_vals,0],dat[::num_vals,1],lw=line_width,color=colorMap.to_rgba(i),label=labels[i], alpha=a )
-         plot(dat[::num_vals,0],dat[::num_vals,1],lw=line_width,color=colorMap.to_rgba(i), alpha=a )
+         plot(dat[::num_vals,0],dat[::num_vals,1],lw=line_width, color=colorMap.to_rgba(i), alpha=a)
       for start_ind in xrange(1, num_vals):
          if man_colors:
             plot(dat[start_ind::num_vals,0],dat[start_ind::num_vals,1],lw=line_width,color=ManualColors[i], alpha=a )
