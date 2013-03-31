@@ -84,3 +84,5 @@ ylabel('ACF')
 
 savefig(args.output)
 
+np.save(args.output[:-4] + '.npy', np.vstack((xi_msm, msm_acf)).T)
+

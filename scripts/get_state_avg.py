@@ -1,8 +1,7 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 
 import numpy as np
-import cython
 from argparse import ArgumentParser
 from pyschwancr import averages
 from msmbuilder import io
