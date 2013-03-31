@@ -9,7 +9,7 @@ matplotlib.rcParams['font.size']=22
 
 parser = arglib.ArgumentParser()
 parser.add_argument('eigenvalues', help='Eigenvalues (excluding equilibrium)')
-parser.add_argument('y_lim', nargs=2, type=float, help='Y-limits')
+parser.add_argument('y_lim', nargs=2, default=[0,0], type=float, help='Y-limits')
 parser.add_argument('lagtime', type=float, default=1, help='Lag time of MSM')
 parser.add_argument('units', default='lagtime', help='Units of lag time')
 parser.add_argument('x_label', default='', help='Label for x-axis')
@@ -36,7 +36,10 @@ if len(red_inds) >= 1:
     
 ax.hlines(times[blue_inds], 0, 1, lw=3, color='blue')
 ax.set_xlim([0,1])
-ax.set_ylim(args.y_lim)
+
+if args.y_lim != [0, 0]:
+    ax.set_ylim(args.y_lim)
+
 ax.set_yscale('log')
 if not args.no_y:
     ax.set_ylabel('Implied Timescales (%s)' % args.units)
