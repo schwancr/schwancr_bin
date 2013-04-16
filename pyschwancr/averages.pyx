@@ -8,7 +8,7 @@ DTYPE_FLOAT = np.float
 ctypedef np.int_t DTYPE_INT_t
 ctypedef np.float_t DTYPE_FLOAT_t
 
-#@cython.boundscheck(False) # turn off bounds checking for entire function
+@cython.boundscheck(False) # turn off bounds checking for entire function
 def state_sums(np.ndarray[DTYPE_INT_t, ndim=1] flat_assigns, 
                np.ndarray[DTYPE_FLOAT_t, ndim=1] flat_data):
 
