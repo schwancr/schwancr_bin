@@ -20,6 +20,10 @@ then
   then
     walltime='99:00:00:00'
     ppn='8'
+  elif [[ $3 == 'SP' ]]
+  then
+    walltime='168:00:00'
+    ppn='16'
   else
     ppn='24'
     walltime='23:59:59'
