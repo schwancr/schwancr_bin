@@ -1,6 +1,8 @@
+#!/home/schwancr/Installed/epd/bin/python -u
+
 from msmbuilder import arglib
 import sys, re, os
-from msmbuilder import Project, Serializer, Trajectory
+from msmbuilder import Project, io, Trajectory
 import numpy as np
 import multiprocessing as mp
 import subprocess
@@ -77,31 +79,44 @@ def analyze_conf( xyzlist ):
 
     return dssp_str
 
-def run( project, output, num_procs=1, chunk_size=50000 ):
+def run( project, output, num_procs=1, chunk_size=50000, traj_fn='all' ):
 
     pool = mp.Pool( num_procs )
 
     dssp_assignments = []
 
-    for i in xrange( project['NumTrajs'] ):
+    if traj_fn.lower() == 'all':
+
+        for i in xrange( project.n_trajs ):
+            traj_dssp_assignments = []
+            N = project.traj_lengths[i]
+            j = 0
+            for trj_chunk in Trajectory.enum_chunks_from_lhdf( project.traj_filename( i ), ChunkSize=chunk_size ):
+                result = pool.map_async( analyze_conf, trj_chunk['XYZList'] )
+                result.wait()
+
+                traj_dssp_assignments.extend( result.get() )
+
+                j+=len(trj_chunk)
+                print "Trajectory %d: %d / %d" % (i, j, N)
+            dssp_assignments.append( traj_dssp_assignments )
+    
+    else:
         traj_dssp_assignments = []
-        N = project['TrajLengths'][i]
+        N = Trajectory.load_from_lhdf(traj_fn, JustInspect=True)[0]
         j = 0
-        for trj_chunk in Trajectory.EnumChunksFromLHDF( project.GetTrajFilename( i ), ChunkSize=chunk_size ):
-            result = pool.map_async( analyze_conf, trj_chunk['XYZList'] )
+        for trj_chunk in Trajectory.enum_chunks_from_lhdf(traj_fn, ChunkSize=chunk_size):
+            result = pool.map_async(analyze_conf, trj_chunk['XYZList'])
             result.wait()
 
-            traj_dssp_assignments.extend( result.get() )
+            traj_dssp_assignments.extend(result.get())
 
             j+=len(trj_chunk)
-            print "Trajectory %d: %d / %d" % (i, j, N)
-        dssp_assignments.append( traj_dssp_assignments )
-
-   # conf['XYZList'] = np.array([ project.ReadFrame(0,0) ])
+            print "Trajectory %s: %d / %d" % (traj_fn, j, N)
+        dssp_assignments.append(traj_dssp_assignments)
 
     dssp_assignments = np.array( dssp_assignments )
     np.save( output, dssp_assignments )
-    #Serializer.SaveData( output, dssp_assignments )
     DEVNULL.close()
 
 if __name__ == '__main__':
@@ -117,12 +132,13 @@ if __name__ == '__main__':
     parser.add_argument('project')
     parser.add_argument('output',help='Output filename (.h5)',default='DSSP.h5') 
     parser.add_argument('num_procs',help='Number of processes to run.', default=1, type=int)
+    parser.add_argument('traj_fn', help='Trajectory to calculate DSSP for. Pass "all" for all trajectories in project.', default='all')
 
     args = parser.parse_args()
 
     arglib.die_if_path_exists( args.output )
     DSSPBINARY = args.dssp_binary
-    project = Project.LoadFromHDF( args.project )
-    CONF = project.GetEmptyTrajectory()
+    project = Project.load_from( args.project )
+    CONF = project.empty_traj()
 
-    run( project, args.output, args.num_procs, 50000 )
+    run(project, args.output, args.num_procs, 50000, traj_fn=args.traj_fn)
