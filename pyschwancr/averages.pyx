@@ -26,7 +26,7 @@ def state_sums(np.ndarray[DTYPE_INT_t, ndim=1] flat_assigns,
         
         cur_state = flat_assigns[i]
         cur_data = flat_data[i]
-        if cur_state < 0:
+        if (cur_state < 0) or (cur_data == -1):
             continue
 
         running_sum[cur_state] += cur_data
