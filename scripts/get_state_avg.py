@@ -46,12 +46,12 @@ def run(ass_fn_list, data_fn_list, out_fn):
 
     for i in range(len(ass_list)):
         cluster_pop = np.bincount(ass_list[i])
-        tot_pops[:len(cluster_pop)] += cluster_pop
 
         sums, sums_sqr = averages.state_sums(ass_list[i], data_list[i])
 
         tot_sums[:len(sums)] += sums
         tot_sums_sqr[:len(sums_sqr)] += sums_sqr
+        tot_pops[:len(cluster_pop)] += cluster_pop
 
     states = np.arange(num_states)    
 
