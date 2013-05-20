@@ -50,7 +50,7 @@ data_traj = msm_data[sampled_traj]
 msm_acf = autocorrelate.fft_autocorrelate(data_traj)
 
 raw_acfs = []
-for i in xrange(raw_data.shape[0]):
+for i in xrange(np.max([raw_data.shape[0], 10])):
     
     max_non_neg = np.where(raw_data[i] != -1)[0].max()
     row = raw_data[i][:max_non_neg + 1]
