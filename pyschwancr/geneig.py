@@ -6,7 +6,7 @@ import numpy
 
 
 def _geneig(a1, b1, left=False, right=True, overwrite_a=False, 
-            overwrite_b=False, return_ab=False):
+            overwrite_b=False, return_ab=True):
     ggev, = get_lapack_funcs(('ggev',), (a1, b1))
     cvl, cvr = left, right
     res = ggev(a1, b1, lwork=-1)
