@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/home/schwancr/Installed/epd/bin/python -u
  
 from argparse import ArgumentParser
 parser = ArgumentParser()
@@ -17,8 +17,19 @@ from schwancrtools import metric_HB
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.pyplot import *
 import os, sys, re
- 
+from time import time
+import logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+sh = logging.StreamHandler(sys.stdout)
+formatter = logging.Formatter(fmt='%(asctime)s - %(message)s', datefmt="%H:%M:%S")
+sh.setFormatter(formatter)
+logger.addHandler(sh)
+logger.propagate = False
+
+logger.info("start")
 Proj = Project.load_from( args.proj_FN )
+logger.info("loaded project info")
 try: Ass = io.loadh( args.ass_FN )['arr_0']
 except: Ass = io.loadh( args.ass_FN )['Data']
 
@@ -39,7 +50,7 @@ atom_indices = np.sort( np.concatenate( ( donor_ainds, donorH_ainds, acceptor_ai
 CMs_1d = np.zeros( ( Ass.max()+1, ppdb.shape[1] ) )
 
 if os.path.exists( args.out_cm ):
-   print "Data file exists, will use it and just re-plot the data"
+   logger.warning("Data file exists, will use it and just re-plot the data")
 
    output_dict = io.loadh( args.out_cm )
    triples = output_dict['donor_h_acceptor_ainds']
@@ -57,16 +68,20 @@ chunk_size=10000
 if CMs == None:
 
    for traj_ind in xrange( Ass.shape[0] ):
-      print "Working on %s" % Proj.traj_filename(traj_ind) 
+      logger.info("Working on %s" % Proj.traj_filename(traj_ind))
       for chunk_ind, trj_chunk in enumerate(Trajectory.enum_chunks_from_lhdf( Proj.traj_filename(traj_ind), 
                                             ChunkSize=chunk_size, AtomIndices=atom_indices ) ):
-         print "chunked"
+         logger.debug("chunked")
          ptrj_chunk = HB.prepare_trajectory( trj_chunk ).astype(float)
          ass_chunk = Ass[traj_ind][ chunk_ind*chunk_size : (chunk_ind+1)*chunk_size ] # this behaves as you want at the end of the array
-         for i,state in enumerate( np.unique( Ass[ np.where( Ass >= 0 ) ] ) ):
-            CMs_1d[i] += ptrj_chunk[ np.where( ass_chunk == state ) ].sum(axis=0)
 
-   StateAssigns = np.array([ np.where( Ass == i )[0].shape[0] for i in np.unique( Ass[ np.where( Ass >= 0 ) ] )] )
+         for i, ass in enumerate(ass_chunk):
+            if ass == -1:
+                continue
+            CMs_1d[ass] += ptrj_chunk[i]
+        
+   #StateAssigns = np.array([ np.where( Ass == i )[0].shape[0] for i in np.unique( Ass[ np.where( Ass >= 0 ) ] )] )
+   StateAssigns = np.bincount(Ass[np.where(Ass != -1)], minlength=Ass.max() + 1)
    StateAssigns = StateAssigns.reshape( (len(StateAssigns),1) )
    AvgCMs_1d = CMs_1d / StateAssigns
 
@@ -116,8 +131,7 @@ if pp:
       DiffHBs = np.array(np.where( (AvgCM - CM_pdb)>0.7 )).T#CMs[9]) > 0.7 )).T
       
       Labels = [ '%d%s %s - %d%s %s' % (donorH_resIDs[i], donorH_resnames[i], donorH_atomnames[i], acceptor_resIDs[j], acceptor_resnames[j], acceptor_atomnames[j] ) for (i,j) in DiffHBs ]
-      print state_ind
-      print Labels
+
       figure()
       
       imshow( AvgCM, interpolation='nearest',vmin=0,vmax=1,cmap='gray_r',extent=(0,num_acceptors,num_donors,0) )
