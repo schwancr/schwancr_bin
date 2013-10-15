@@ -24,16 +24,22 @@ args = parser.parse_args()
 
 matplotlib.rcParams['font.size']=22
 
+equil_pops = np.loadtxt( args.equilibrium_pops )
 if args.starting_pops != 'all':
-    starting_pops = np.loadtxt( args.starting_pops )
-    starting_pops /= starting_pops.sum() # Normalize just in case.
+    starting_pops = np.loadtxt( args.starting_pops ).flatten()
+
+    if starting_pops.shape[0] == equil_pops.shape[0]:
+        starting_pops /= starting_pops.sum() # Normalize just in case.
+    else:
+        starting_inds = starting_pops.copy()
+        starting_pops = np.zeros(equil_pops.shape)
+        starting_pops[starting_inds.astype(int)] = 1 / float(len(starting_inds))
 else:
     starting_pops = None
 
 try: data = np.loadtxt( args.data )[:,1]
 except: data = np.loadtxt(args.data).flatten()
 t = mmread( args.tProb )
-equil_pops = np.loadtxt( args.equilibrium_pops )
 
 sol = msm_analysis.calc_expectation_timeseries( t, data, lagtime = args.lagtime, n_modes = args.num_modes, timepoints = args.num_points, init_pop=starting_pops )
 

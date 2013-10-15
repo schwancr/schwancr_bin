@@ -17,7 +17,7 @@ parser.add_argument('--lin-scale',dest='lin_scale',default=False, action='store_
 options = parser.parse_args()
 import numpy as np
 import matplotlib
-matplotlib.use('agg')
+matplotlib.use('pdf')
 from matplotlib.pyplot import *
 from pyschwancr.custom_tickers import SchwancrFormatter
 import re,sys,os

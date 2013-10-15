@@ -9,7 +9,7 @@ import os
 
 def run(ass_fn_list, data_fn_list, out_fn):
 
-    print ass_fn_list, data_fn_list
+    print ass_fn_list, data_fn_list, out_fn
     assert len(ass_fn_list) == len(data_fn_list)
 
     if os.path.exists(out_fn):

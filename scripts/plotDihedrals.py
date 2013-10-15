@@ -11,7 +11,7 @@ parser.add_argument('--double',dest='double',default=False,action='store_true',h
 options = parser.parse_args()
  
 import numpy as np
-from msmbuilder import Serializer, Trajectory
+from msmbuilder import io, Trajectory
 from msmbuilder import metrics
 from msmbuilder.geometry import dihedral
 import matplotlib
@@ -19,9 +19,9 @@ matplotlib.use('pdf')
 from matplotlib.pyplot import *
 import os, sys, re
  
-pdb = Trajectory.LoadTrajectoryFile( options.pdbFN )
+pdb = Trajectory.load_trajectory_file( options.pdbFN )
 
-pca = Serializer.LoadFromHDF( options.pcaFN )
+pca = io.loadh( options.pcaFN )
 
 decInd = np.argsort( pca['vals'] )[::-1]
 
@@ -48,12 +48,14 @@ if 'chi' in angles:
     Rs = [ pdb['ResidueID'][row[0]] for row in dihedral._get_indices_chi( pdb ) ]
     N = len( Rs )
     plot( Rs, v0[ count : count + N ],marker='o',color='blue', label = 'Chi Angles' )
+    np.savetxt('chi.dat', v0[count: count+N])
     count += N
     
 if 'omega' in angles:
     Rs = [ pdb['ResidueID'][row[0]] for row in dihedral._get_indices_omega( pdb ) ]
     N = len( Rs )
     plot( Rs, v0[ count : count + N ],marker='s',color='cyan', label = 'Omega Angles' )
+    np.savetxt('omega.dat', v0[count: count+N])
     count += N
 
    
@@ -61,12 +63,15 @@ if 'phi' in angles:
     Rs = [ pdb['ResidueID'][row[0]] for row in dihedral._get_indices_phi( pdb ) ]
     N = len( Rs )
     plot( Rs, v0[ count : count + N ],marker='^',color='purple', label = 'Phi Angles' )
+    np.savetxt('phi.dat', v0[count: count+N])
     count += N
 
 if 'psi' in angles:
     Rs = [ pdb['ResidueID'][row[0]] for row in dihedral._get_indices_psi( pdb ) ]
     N = len( Rs )
     plot( Rs, v0[ count : count + N ],marker='*',color='red', label = 'Psi Angles' )
+    np.savetxt('psi.dat', v0[count:count+N])
+
     count += N
 
 if count != len( v0 ):
@@ -75,6 +80,7 @@ if count != len( v0 ):
 legend()
 xlabel('Residue ID')
 ylabel('Norm of Weight in PC1')
+yscale('log')
 ylim([0,1.2*ylim()[1]])
 print "Saved Plot to %s" % options.outFN 
 savefig( options.outFN )

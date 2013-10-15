@@ -19,7 +19,7 @@ options = parser.parse_args()
 import matplotlib
 matplotlib.use('pdf')
 import numpy as np
-from msmbuilder import MSMLib
+from msmbuilder import msm_analysis
 from matplotlib.pyplot import *
 from scipy.io import mmread
 import os, sys, re
@@ -35,7 +35,7 @@ if os.path.exists( options.writeFN +'%d.npy'%options.num_vals ):
 else:
    T = mmread( options.T_FN )
 
-   Vals,Vecs = MSMLib.GetEigenvectors( T, options.num_vals+1 )
+   Vals,Vecs = msm_analysis.get_eigenvectors( T, options.num_vals+1 )
 
    Vals = Vals.real[1:]
 
