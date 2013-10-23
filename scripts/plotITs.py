@@ -66,6 +66,9 @@ for i,fn in enumerate(options.dataFNs):
       except: 
          print "cannot load with np.load or np.loadtxt"
          exit()
+
+   dat[:, 1][np.where(dat[:, 1] <= 0)] = 1E-10
+
    if options.slowest: # Need to subsample data by the number of eig values
       numEig = float(len(dat)) / len(np.unique(dat[:,0]))
       if numEig-int(numEig)!=0:
