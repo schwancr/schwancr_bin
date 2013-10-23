@@ -32,6 +32,7 @@ def run(ass_fn_list, data_fn_list, out_fn):
 
         if ass.shape != data.shape:
             print i, ass.shape.__repr__(), data.shape.__repr__()
+            exit()
 
         ass_1d = ass[np.where(ass != -1)]
         data_1d = data[np.where(ass != -1)]

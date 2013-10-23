@@ -24,6 +24,11 @@ then
   then
     walltime='168:00:00'
     ppn='16'
+  elif [[ $3 == 'short_SP' ]]
+  then
+    walltime='10:00:00'
+    ppn='16'
+    queue='SP'
   else
     ppn='24'
     walltime='23:59:59'
