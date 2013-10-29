@@ -1,5 +1,4 @@
 #!/usr/bin/env python
- 
 from argparse import ArgumentParser
 parser = ArgumentParser()
 parser.add_argument('-p',dest='proj_FN',default='../ProjectInfo.h5',help='ProjectInfo.h5 from msmbuilder [ ../ProjectInfo.h5 ]')
@@ -7,13 +6,15 @@ parser.add_argument('-a',dest='ass_FN',default='./Assignments.Fixed.h5',help='As
 parser.add_argument('--ot',dest='out_cm',default='./StateAvgHBs.h5',help='Average HB\'s for each state, along with the corresponding atom indices [ ./StateAvgHBs.h5 ]')
 parser.add_argument('--op',dest='out_plot',default='./StateAvgHBs.pdf',help='Output for plotting each state\'s HB. Will only plot if there are fewer than 20 states [ ./StateAvgHBs.pdf ]')
 parser.add_argument('-s',dest='nat_FN',help='Native state to use to compare the contact maps')
+parser.add_argument('-w', dest='which', help='which contacts to look for. Should have three columns corresponding to (acceptor, acceptor-hydrogen, donor) atom indices')
 args = parser.parse_args()
  
 import numpy as np
 import matplotlib
 matplotlib.use('pdf')
 from msmbuilder import io, Project, metrics, Conformation, Trajectory
-from schwancrtools import metric_HB
+from schwancrtools import angle
+from msmbuilder.geometry import contact
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.pyplot import *
 import os, sys, re
@@ -33,19 +34,27 @@ logger.info("loaded project info")
 try: Ass = io.loadh( args.ass_FN )['arr_0']
 except: Ass = io.loadh( args.ass_FN )['Data']
 
-HB = metric_HB.HydrogenBond()
-
 pdb = Trajectory.load_from_pdb( Proj.conf_filename )
 
-donorH_ainds = np.where( ( (pdb['AtomNames'] == 'H')|(pdb['AtomNames'] =='HN' ) )&(pdb['ResidueNames']!='PRO') )[0] # _ainds correspond to atom indices in the trajectory
-donor_ainds = np.where( (pdb['AtomNames'] == 'N')&(pdb['ResidueNames']!='PRO') )[0]
-acceptor_ainds = np.where( pdb['AtomNames'] == 'O' )[0] # This excludes the C-Terminus which has naming issues...
+which = np.loadtxt(args.which).astype(int)
 
+distance_cutoff = 0.35
+angle_cutoff = 90
 
+def get_hb(traj):
+
+    # get accH - donor distance:
+    dists = contact.atom_distances(traj['XYZList'], atom_contacts=which[:, 1:])
+
+    # get angles
+    angles = angle.compute_angles(traj, which)
+
+    hb = ((dists < distance_cutoff) & (angles > angle_cutoff)).astype(int)
+
+    return hb
+    
 n_res = np.unique( pdb['ResidueID'] ).shape[0]
-ppdb = HB.prepare_trajectory(pdb) # Do this to set the donor indices and stuff
-
-atom_indices = np.sort( np.concatenate( ( donor_ainds, donorH_ainds, acceptor_ainds ) ) )
+ppdb = get_hb(pdb) # Do this to set the donor indices and stuff
 
 CMs_1d = np.zeros( ( Ass.max()+1, ppdb.shape[1] ) )
 
@@ -53,10 +62,10 @@ if os.path.exists( args.out_cm ):
    logger.warning("Data file exists, will use it and just re-plot the data")
 
    output_dict = io.loadh( args.out_cm )
-   triples = output_dict['donor_h_acceptor_ainds']
-   CMs = output_dict['HB_maps']
+   which = output_dict['which']
+   AvgCMs_1d = output_dict['HB_maps']
 else:
-   CMs = None
+   AvgCMs_1d = None
 
 if ( Ass.max() < 250 ): 
    pp = PdfPages( args.out_plot )
@@ -65,14 +74,14 @@ else:
 
 chunk_size=10000
 
-if CMs == None:
+if AvgCMs_1d == None:
 
    for traj_ind in xrange( Ass.shape[0] ):
       logger.info("Working on %s" % Proj.traj_filename(traj_ind))
       for chunk_ind, trj_chunk in enumerate(Trajectory.enum_chunks_from_lhdf( Proj.traj_filename(traj_ind), 
-                                            ChunkSize=chunk_size, AtomIndices=atom_indices ) ):
+                                            ChunkSize=chunk_size) ):
          logger.debug("chunked")
-         ptrj_chunk = HB.prepare_trajectory( trj_chunk ).astype(float)
+         ptrj_chunk = get_hb( trj_chunk ).astype(float)
          ass_chunk = Ass[traj_ind][ chunk_ind*chunk_size : (chunk_ind+1)*chunk_size ] # this behaves as you want at the end of the array
 
          for i, ass in enumerate(ass_chunk):
@@ -85,61 +94,52 @@ if CMs == None:
    StateAssigns = StateAssigns.reshape( (len(StateAssigns),1) )
    AvgCMs_1d = CMs_1d / StateAssigns
 
-   num_donors = len( HB.last_donor_ainds )
-   num_acceptors = len( HB.last_acceptor_ainds )
-
-   CMs = AvgCMs_1d.reshape( (-1,num_donors,num_acceptors),order='C')
-
-   triples = HB.get_angle_list()
-   io.saveh(args.out_cm, donor_h_acceptor_ainds=triples, HB_maps=np.array(CMs))
-#CMs = [ avg_cm.reshape( (num_donors, num_acceptors ), order='C') for avg_cm in AvgCMs_1d ]
-
-num_acceptors = len( np.unique( triples[:,2] ) )
-num_donors = len( np.unique( triples[:,0] ) )
-
-donor_ainds = np.unique( triples[:,0] )
-donorH_ainds = np.unique( triples[:,1] )
-acceptor_ainds = np.unique( triples[:,2] )
+   io.saveh(args.out_cm, which=which, HB_maps=AvgCMs_1d)
 
 
-donor_atomnames = pdb['AtomNames'][ donor_ainds ]
-donorH_atomnames = pdb['AtomNames'][ donorH_ainds ]
-acceptor_atomnames = pdb['AtomNames'][ acceptor_ainds ]
+uniq_res = np.unique(pdb['ResidueID'])
+n_res = uniq_res.shape[0]
 
-donor_resnames = pdb['ResidueNames'][ donor_ainds ]
-donorH_resnames = pdb['ResidueNames'][ donorH_ainds ]
-acceptor_resnames = pdb['ResidueNames'][ acceptor_ainds ]
+acc_res_ids = pdb['ResidueID'][which[:, 0]]
+donor_res_ids = pdb['ResidueID'][which[:, 2]]
 
-donor_resIDs = pdb['ResidueID'][ donor_ainds ]
-donorH_resIDs = pdb['ResidueID'][ donorH_ainds ]
-acceptor_resIDs = pdb['ResidueID'][ acceptor_ainds ]
+CMs = np.zeros((len(AvgCMs_1d), n_res, n_res))
+CM_pdb = np.zeros((n_res, n_res))
+for i in xrange(n_res):
+    for j in xrange(n_res):
+        if i == j:
+            continue
+        inds = np.where((acc_res_ids == uniq_res[i]) & (donor_res_ids == uniq_res[j]))[0]
+        if len(inds) == 0:
+            CMs[:, i, j] = -1
+            CM_pdb[i, j] = -1
 
-nat_pdb = Trajectory.load_from_pdb( args.nat_FN )
+        else:
+            CMs[:, i, j] = AvgCMs_1d[:, inds].sum(axis=1)
+            CM_pdb[i, j] = ppdb[:, inds].sum()
+            # change this line to get different behavior
 
-CM_pdb = HB.prepare_trajectory( nat_pdb )
-
-CM_pdb = CM_pdb.reshape( (1,num_donors, num_acceptors), order='C')[0]
-
-native_locs = np.array(np.where( CM_pdb )).T
-
-
+native_locs = np.array(np.where(CM_pdb > 0.5)).T
 if pp:
 
    for state_ind in xrange( CMs.shape[0] ):
       AvgCM = CMs[state_ind]
 
+      print AvgCM.shape
+
       DiffHBs = np.array(np.where( (AvgCM - CM_pdb)>0.7 )).T#CMs[9]) > 0.7 )).T
       
-      Labels = [ '%d%s %s - %d%s %s' % (donorH_resIDs[i], donorH_resnames[i], donorH_atomnames[i], acceptor_resIDs[j], acceptor_resnames[j], acceptor_atomnames[j] ) for (i,j) in DiffHBs ]
+#      Labels = [ '%d%s %s - %d%s %s' % (donorH_resIDs[i], donorH_resnames[i], donorH_atomnames[i], acceptor_resIDs[j], acceptor_resnames[j], acceptor_atomnames[j] ) for (i,j) in DiffHBs ]
 
       figure()
       
-      imshow( AvgCM, interpolation='nearest',vmin=0,vmax=1,cmap='gray_r',extent=(0,num_acceptors,num_donors,0) )
+      imshow( AvgCM, interpolation='nearest', vmin=-1, vmax=1, cmap='RdBu',extent=(0,n_res,n_res,0) )
       n=10
       for (x,y) in native_locs:
           plot( [y,y,y+1,y+1,y], [x,x+1,x+1,x,x], color='red')
-      #xlim([ 0-n, num_acceptors+n ])
-      #ylim([ num_donors+n, 0-n ])
+      xlim(0, n_res)
+      ylim(n_res, 0)
+      
       xlabel('Acceptor ID')
       ylabel('Donor ID')
       colorbar().set_label('Average H-Bonding in State')
