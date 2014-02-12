@@ -24,7 +24,7 @@ import re,sys,os
 
 if options.font_size != None:
    matplotlib.rcParams['font.size'] = options.font_size
-matplotlib.rcParams['axes.formatter.limits'] = (-1,4)
+#matplotlib.rcParams['axes.formatter.limits'] = (-1,4)
 
 man_colors = True
 ManualColors = [ 'blue', 'red', 'purple','orange','yellow' ]
@@ -148,4 +148,4 @@ if not options.lin_scale:
     yscale('log')
 
 #gca().set_axis_bgcolor('#cdc9c9')
-savefig(options.outFN, dpi=200)
+savefig(options.outFN)

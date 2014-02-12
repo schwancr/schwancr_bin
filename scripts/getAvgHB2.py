@@ -38,8 +38,8 @@ pdb = Trajectory.load_from_pdb( Proj.conf_filename )
 
 which = np.loadtxt(args.which).astype(int)
 
-distance_cutoff = 0.35
-angle_cutoff = 90
+distance_cutoff = 0.32
+angle_cutoff = 120
 
 def get_hb(traj):
 
