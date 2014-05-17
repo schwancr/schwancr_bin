@@ -21,14 +21,23 @@ matplotlib.use('pdf')
 from matplotlib.pyplot import *
 from pyschwancr.custom_tickers import SchwancrFormatter
 import re,sys,os
+import pandas
+matplotlib.rcParams.update(pandas.tools.plotting.mpl_stylesheet)
+matplotlib.rcParams['font.family'] = 'sans-serif'
+matplotlib.rcParams['axes.labelcolor'] = 'black'
+matplotlib.rcParams['xtick.color'] = 'black'
+matplotlib.rcParams['ytick.color'] = 'black'
+matplotlib.rcParams['font.size'] = 22
+
 
 if options.font_size != None:
    matplotlib.rcParams['font.size'] = options.font_size
 matplotlib.rcParams['axes.formatter.limits'] = (-1,4)
 
 man_colors = True
-ManualColors = [ 'blue', 'red', 'purple','orange','yellow' ]
-
+#ManualColors = [ 'blue', 'red', 'purple','orange','yellow' ]
+ManualColors = ['#348ABD', '#7A68A6', '#A60628', '#467821', '#CF4457', 
+                '#188487', '#E24A33']
 #myTicker2 = SchwancrFormatter(useMathText=True,useOffset=False,precision=2)
 myTicker2 = SchwancrFormatter(useMathText=True,useOffset=False,precision=0)
 

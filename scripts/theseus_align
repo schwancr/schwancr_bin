@@ -44,17 +44,17 @@
 CAT="/bin/cat";
 SED="/usr/bin/sed";
 TEE="/usr/bin/tee";
-theseus="/Users/schwancr/schwancr_bin/theseus"; # where to find the THESEUS binary executable
+theseus="/usr/local/bin/theseus"; # where to find the THESEUS binary executable
 fastafile="theseus.fasta";
 filemapfile="theseus.filemap";
 alignmentfile="theseus.aln";
 
 # for MUSCLE -- http://www.drive5.com/muscle/
-alignprog="/schwancr_bin/muscle";
+alignprog="/usr/local/bin/muscle";
 align_cmd="${alignprog} -maxiters 32 -in ${fastafile} -out ${alignmentfile} -clwstrict";
 
 # for PROBCONS -- http://probcons.stanford.edu/
-#alignprog="/schwancr_bin/muscle";
+#alignprog="/usr/local/bin/probcons";
 #align_cmd="( ${alignprog} -clustalw ${fastafile} | ${SED} 's/PROBCONS/CLUSTALW/' | ${TEE} ${alignmentfile} )";
 #echo $align_cmd
 
