@@ -34,7 +34,7 @@ myTicker2 = SchwancrFormatter(useMathText=True,useOffset=False,precision=0)
 
 #matplotlib.rc('text',usetex=True)
 
-colors = matplotlib.colors.normalize()
+colors = matplotlib.colors.Normalize()
 colors.autoscale( [-0.15] + range( len(options.dataFNs) ) + [ len(options.dataFNs) -0.85]  )
 
 

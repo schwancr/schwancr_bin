@@ -4,7 +4,7 @@
 import numpy as np
 from argparse import ArgumentParser
 from pyschwancr import averages
-from msmbuilder import io
+from mdtraj import io
 import os
 
 def run(ass_fn_list, data_fn_list, out_fn):

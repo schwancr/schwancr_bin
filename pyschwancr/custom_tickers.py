@@ -32,7 +32,7 @@ class SchwancrFormatter(ScalarFormatter):
             return s
       except IndexError, msg:
          return s
-   def _set_format(self):
+   def _set_format(self, *args):
       # set the format string to format all the ticklabels
       # The floating point black magic (adding 1e-15 and formatting
       # to 8 digits) may warrant review and cleanup.
