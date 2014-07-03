@@ -13,7 +13,7 @@ options = parser.parse_args()
 import numpy as np
 from scipy.io import mmread
 #from scipy.sparse.linalg import eigs
-from msmbuilder import MSMLib
+from msmbuilder import msm_analysis
 import matplotlib
 matplotlib.use('pdf')
 from matplotlib.backends.backend_pdf import PdfPages
@@ -35,7 +35,7 @@ if len( ord_param.shape ) == 2:
    ord_param = ord_param[:,1]
 
 T = mmread( options.T_fn )
-vals,vecs = MSMLib.GetEigenvectors( T, num_vecs+1 )
+vals,vecs = msm_analysis.get_eigenvectors( T, num_vecs+1 )
 #vals, vecs = eigs( T, k = num_vecs + 1 )
 
 vecs=vecs.real
