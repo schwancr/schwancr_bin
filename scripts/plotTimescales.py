@@ -12,12 +12,14 @@ parser.add_argument('--x-label',dest='x_lbl',help='x-axis label [ OPTIONAL ]')
 parser.add_argument('--title',dest='title',help='Title for plot [ OPTIONAL ]')
 parser.add_argument('--y-lim',dest='y_lim',nargs=2,type=float,help='y-limits if you want to choose them',default=None)
 parser.add_argument('--print-not-calc',dest='print_not_calc',default=False,action='store_true',help='Pass this flag if you want to print "Not Calculated in the empty space at the bottom of the graph')
+parser.add_argument('--color', dest='color', default='blue', help='color of lines.')
+parser.add_argument('--no-y', dest='no_yaxis', default=False, action='store_true', help='Pass this flag to remove y-ticks and y-label')
 options = parser.parse_args()
  
 import matplotlib
 matplotlib.use('pdf')
 import numpy as np
-from msmbuilder import MSMLib
+from msmbuilder import msm_analysis
 from matplotlib.pyplot import *
 from scipy.io import mmread
 import os, sys, re
@@ -33,18 +35,19 @@ if os.path.exists( options.writeFN +'%d.npy'%options.num_vals ):
 else:
    T = mmread( options.T_FN )
 
-   Vals,Vecs = MSMLib.GetEigenvectors( T, options.num_vals+1 )
+   Vals,Vecs = msm_analysis.get_eigenvectors( T, options.num_vals+1 )
 
    Vals = Vals.real[1:]
 
    np.save( options.writeFN + '%d.npy' % options.num_vals, Vals )
    print "Saved values"
 
+Vals = Vals[np.where(Vals > 0)]
 figure()
 subplot(132)
 
 Taus = - options.lag / options.divisor / np.log( Vals )
-hlines( Taus, 0, 1, color='blue')
+hlines( Taus, 0, 1, color=options.color)
 if options.y_lim == None:
    ylim([10**int(np.log10(Taus.min())),10**int(np.log10(Taus.max())+1)])
 else:
@@ -60,6 +63,10 @@ if options.title:
 
 if options.print_not_calc:
    text(0.11, ylim()[0] + 10**(np.log10(ylim()[1])-np.log10(ylim()[0]))*0.05, "Not Calculated", fontsize=14)
+
+if options.no_yaxis:
+    yticks([])
+    ylabel('')
 
 print "Saving plot"
 savefig( options.writeFN + '%d.pdf' % options.num_vals )

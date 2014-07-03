@@ -20,6 +20,20 @@ then
   then
     walltime='99:00:00:00'
     ppn='8'
+  elif [[ $3 == 'SP' ]]
+  then
+    walltime='3:00:00:00'
+    ppn='16'
+  elif [[ $3 == 'short_SP' ]]
+  then
+    walltime='10:00:00'
+    ppn='16'
+    queue='SP'
+  elif [[ $3 == 'single_SP' ]]
+  then
+    walltime='3:00:00:00'
+    ppn='1'
+    queue='SP'
   else
     ppn='24'
     walltime='23:59:59'

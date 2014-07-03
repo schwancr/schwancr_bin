@@ -12,13 +12,13 @@ options, args = parser.parse_args()
  
 import numpy as np
 from scipy.io import mmread
-from msmbuilder import TransitionPathTheory as TPT
+from msmbuilder import tpt 
 from pyschwancr import dataIO
 import os, sys, re
  
 def AnalyzeIndex( state ):
     print "Working on state %d" % state
-    return TPT.GetMFPTsolve( [ state ], T, LagTime=Lag )
+    return tpt.GetMFPTsolve( [ state ], T, LagTime=Lag )
     #return TPT.GetMFPTFundMat( state, T, Pops, LagTime=Lag )
 
 print "Loading data..."

@@ -24,6 +24,7 @@ options, args = parser.parse_args()
 
 from numpy import *
 import matplotlib
+matplotlib.use('pdf')
 from matplotlib.pyplot import *
 #from matplotlib.backends.backend_pdf import PdfPages
 from scipy import interpolate
@@ -40,6 +41,10 @@ print "IF THE INPUT DATA IS COMPLEX, THE PLOTS WILL ONLY BE THE REAL PART!!!"
 X = dataIO.readData( options.xFN ).real
 Y = dataIO.readData( options.yFN ).real
 
+if options.xFN[-3:] == '.h5':
+    X = X[np.where(X!=-1)]
+if options.yFN[-3:] == '.h5':
+    Y = Y[np.where(Y!=-1)]
 
 if len( X.shape ) > 1:
 	if X.shape[1] == 1:

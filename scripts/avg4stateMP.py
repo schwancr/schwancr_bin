@@ -38,7 +38,6 @@ def main():
     sys.stdout = os.fdopen(sys.stdout.fileno(),'w',0)
     print "Reading in Assignments... from %s " % options.assFN
     As = io.loadh(options.assFN)['arr_0'].astype(int)
-    proj = Project.load_from( options.projFN )
     print "Reading in data... from %s " % options.dataFN
     try: 
         f = io.loadh( options.dataFN )
@@ -48,6 +47,7 @@ def main():
             data2d = f['Data']
     except:
         data = load(options.dataFN)
+        proj = Project.load_from( options.projFN )
         data2d = msmTools.reshapeRawData( data, proj )
 
     print "Calculating averages for:"

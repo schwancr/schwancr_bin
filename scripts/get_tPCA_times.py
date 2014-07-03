@@ -13,6 +13,8 @@ options = parser.parse_args()
  
 from msmbuilder import io
 import numpy as np
+import matplotlib
+matplotlib.use('agg')
 from matplotlib.pyplot import *
 import os, sys, re
 

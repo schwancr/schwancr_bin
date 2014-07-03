@@ -38,7 +38,7 @@ else:
 
 
 
-if ( Ass.max() < 100 ): 
+if ( Ass.max() < 250 ): 
    pp = PdfPages( args.out_plot )
 else:
    pp = None

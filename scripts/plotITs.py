@@ -10,30 +10,40 @@ parser.add_argument('--units',dest='units',default='frames',help='Units to print
 parser.add_argument('--slowest',dest='slowest',default=False,action='store_true',help='Pass this flag to only plot the slowest timescale')
 parser.add_argument('--y-lim',dest='y_lim',default=None,type=float,nargs=2,help='Two values corresponding to the limits for the y axis')
 parser.add_argument('--x-lim',dest='x_lim',default=None,type=float,nargs=2,help='Two values corresponding to the limits for the x axis')
-parser.add_argument('--font-size',dest='font_size',type=int,help='Font size to use.')
+parser.add_argument('--font-size',dest='font_size',default=22, type=int,help='Font size to use.')
 parser.add_argument('--top-N',dest='top_N',type=int,default=-1,help='Only plot the top N timescales (-1 means plot all)')
 parser.add_argument('--plot-line',dest='plot_line',default=False,action='store_true',help='Pass this flag if you want a line plot instead of a scatter plot')
 parser.add_argument('--lin-scale',dest='lin_scale',default=False, action='store_true', help='Pass this flag if you want the y-scaled linearly. Default is log-scale.')
 options = parser.parse_args()
 import numpy as np
 import matplotlib
-matplotlib.use('agg')
+matplotlib.use('pdf')
 from matplotlib.pyplot import *
 from pyschwancr.custom_tickers import SchwancrFormatter
 import re,sys,os
+import pandas
+matplotlib.rcParams.update(pandas.tools.plotting.mpl_stylesheet)
+matplotlib.rcParams['font.family'] = 'sans-serif'
+matplotlib.rcParams['axes.labelcolor'] = 'black'
+matplotlib.rcParams['xtick.color'] = 'black'
+matplotlib.rcParams['ytick.color'] = 'black'
+matplotlib.rcParams['font.size'] = 22
+
 
 if options.font_size != None:
    matplotlib.rcParams['font.size'] = options.font_size
-matplotlib.rcParams['axes.formatter.limits'] = (-1,4)
+#matplotlib.rcParams['axes.formatter.limits'] = (-1,4)
 
-ManualColors = [ 'blue', 'green', 'purple','orange','yellow' ]
-
+man_colors = True
+#ManualColors = [ 'blue', 'red', 'purple','orange','yellow' ]
+ManualColors = ['#348ABD', '#7A68A6', '#A60628', '#467821', '#CF4457', 
+                '#188487', '#E24A33']
 #myTicker2 = SchwancrFormatter(useMathText=True,useOffset=False,precision=2)
 myTicker2 = SchwancrFormatter(useMathText=True,useOffset=False,precision=0)
 
 #matplotlib.rc('text',usetex=True)
 
-colors = matplotlib.colors.normalize()
+colors = matplotlib.colors.Normalize()
 colors.autoscale( [-0.15] + range( len(options.dataFNs) ) + [ len(options.dataFNs) -0.85]  )
 
 
@@ -49,7 +59,6 @@ axes( (h,h,1-2*h,1-2*h) )
 gca().xaxis.set_major_formatter( myTicker2 )
 gca().yaxis.set_major_formatter( myTicker2 )
 
-man_colors = False
 if len(options.dataFNs) <= len( ManualColors ):
    man_colors = True
 
@@ -66,6 +75,9 @@ for i,fn in enumerate(options.dataFNs):
       except: 
          print "cannot load with np.load or np.loadtxt"
          exit()
+
+   dat[:, 1][np.where(dat[:, 1] <= 0)] = 1E-10
+
    if options.slowest: # Need to subsample data by the number of eig values
       numEig = float(len(dat)) / len(np.unique(dat[:,0]))
       if numEig-int(numEig)!=0:
@@ -93,7 +105,7 @@ for i,fn in enumerate(options.dataFNs):
          plot(dat[::num_vals,0],dat[::num_vals,1],lw=line_width,color=ManualColors[i], alpha=a )
       else:
          #plot(dat[::num_vals,0],dat[::num_vals,1],lw=line_width,color=colorMap.to_rgba(i),label=labels[i], alpha=a )
-         plot(dat[::num_vals,0],dat[::num_vals,1],lw=line_width,color=colorMap.to_rgba(i), alpha=a )
+         plot(dat[::num_vals,0],dat[::num_vals,1],lw=line_width, color=colorMap.to_rgba(i), alpha=a)
       for start_ind in xrange(1, num_vals):
          if man_colors:
             plot(dat[start_ind::num_vals,0],dat[start_ind::num_vals,1],lw=line_width,color=ManualColors[i], alpha=a )
@@ -145,4 +157,4 @@ if not options.lin_scale:
     yscale('log')
 
 #gca().set_axis_bgcolor('#cdc9c9')
-savefig(options.outFN, dpi=200)
+savefig(options.outFN)

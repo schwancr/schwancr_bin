@@ -12,12 +12,16 @@ options, args = parser.parse_args()
 import matplotlib
 matplotlib.use('Pdf')
 from matplotlib.pyplot import *
-from msmbuilder import Serializer
+from msmbuilder import io
 from numpy import *
 
 # First read in the data:
 
-As = Serializer.LoadData(options.assFN).astype(int)
+As = io.loadh(options.assFN)
+try:
+    As = As['Data']
+except:
+    As = As['arr_0']
 
 As1D = As[ where( As >= 0 ) ].flatten()
 
