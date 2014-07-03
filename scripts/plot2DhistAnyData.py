@@ -24,6 +24,7 @@ options, args = parser.parse_args()
 
 from numpy import *
 import matplotlib
+matplotlib.use('pdf')
 from matplotlib.pyplot import *
 #from matplotlib.backends.backend_pdf import PdfPages
 from scipy import interpolate

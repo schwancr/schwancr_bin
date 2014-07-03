@@ -22,12 +22,17 @@ then
     ppn='8'
   elif [[ $3 == 'SP' ]]
   then
-    walltime='168:00:00'
+    walltime='3:00:00:00'
     ppn='16'
   elif [[ $3 == 'short_SP' ]]
   then
     walltime='10:00:00'
     ppn='16'
+    queue='SP'
+  elif [[ $3 == 'single_SP' ]]
+  then
+    walltime='3:00:00:00'
+    ppn='1'
     queue='SP'
   else
     ppn='24'

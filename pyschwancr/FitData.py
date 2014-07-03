@@ -121,7 +121,7 @@ def expon( p, x):
 
 def multi_expon( N, p, x ):
     const = p[-1]
-    p = p[:-1].reshape( (N,-1) )
+    p = p[:-1].reshape( (N,2) )
     
     sum = const
     for i in range( N ):

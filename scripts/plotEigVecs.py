@@ -10,6 +10,7 @@ parser.add_argument('-O',dest='pop_fn',default='./Populations.dat',help='Equilib
 
 options = parser.parse_args()
  
+import glob
 import numpy as np
 from scipy.io import mmread
 #from scipy.sparse.linalg import eigs
@@ -35,8 +36,23 @@ if len( ord_param.shape ) == 2:
    ord_param = ord_param[:,1]
 
 T = mmread( options.T_fn )
-vals,vecs = msm_analysis.get_eigenvectors( T, num_vecs+1 )
-#vals, vecs = eigs( T, k = num_vecs + 1 )
+
+# try to find eigenvectors in a file
+
+file_list = glob.glob("eigs*.h5")
+
+try:
+    fn = file_list[0]
+    f = io.loadh(fn)
+    vals = f['vals']
+    vecs = f['vecs']
+
+    vals = vals[:num_vecs + 1]
+    vecs = vecs[:, :num_vecs + 1]
+
+except:
+    vals, vecs = msm_analysis.get_eigenvectors( T, num_vecs+1 )
+    #vals, vecs = eigs( T, k = num_vecs + 1 )
 
 vecs=vecs.real
 
