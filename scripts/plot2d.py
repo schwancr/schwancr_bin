@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 
 import numpy as np
 from matplotlib.pyplot import *
@@ -20,6 +21,12 @@ args = parser.parse_args()
 class KDE2D:
     def __init__(self, means, stdevs, weights=None):
         self.means = means
+        
+        for i in xrange(stdevs.shape[1]):
+            stdevs[np.where(stdevs[:, i] == 0)[0], i] = np.min(stdevs[np.where(stdevs[i,:] > 0)[0], i])
+
+        print stdevs.min()
+
         self.inv_stdevs = 1.0 / stdevs
         self.inv_stdevs2 = 1.0 / np.square(stdevs)
 
@@ -64,11 +71,10 @@ xtest, ytest = np.meshgrid(np.linspace(args.xlim[0], args.xlim[1], 100), np.lins
 points = np.array([xtest, ytest])
 
 P = kde(points)
-
+print P
 axes((0.18, 0.18, 0.72, 0.72))
 imshow(P / np.abs(P).max(), extent=args.xlim + args.ylim, origin='lower', 
-        aspect='auto', interpolation='nearest', cmap=matplotlib.cm.RdBu,
-        vmin=-1, vmax=1)
+        aspect='auto', interpolation='spline36', cmap=matplotlib.cm.jet)
 
 c = colorbar()
 xlabel(args.xlabel)
