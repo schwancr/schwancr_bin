@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# should add a check for a valid colon
+
+colon=`echo $1 | grep -c ':'`
+if [ $colon -eq 0 ]
+then
+    echo "usage: get [user@]hostname:path"
+    exit
+fi
+
+thing=`echo $1 | cut -d: -f2`
+host=`echo $1 | cut -d: -f1`
+
+curdir=`pwd`
+home=$HOME
+
+# want to remove home from curdir:
+
+reldir=`echo $curdir | sed -e s+$HOME/++`
+
+
+scp -r $host:~/$reldir/$thing `dirname $thing`/
