@@ -34,6 +34,15 @@ then
     walltime='3:00:00:00'
     ppn='1'
     queue='SP'
+  elif [[ $3 == 'GPU' ]]
+  then
+    walltime='7:00:00:00'
+    ppn='1'
+  elif [[ $3 == 'short_GPU' ]]
+  then
+    walltime='10:00:00'
+    ppn='9'
+    queue='GPU'
   else
     ppn='24'
     walltime='23:59:59'
