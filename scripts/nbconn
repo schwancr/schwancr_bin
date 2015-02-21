@@ -1,0 +1,8 @@
+#!/bin/bash
+
+hostname=$1
+port=$2
+
+screen -d -m ssh -A -o ServerAliveInterval=180 -o Ciphers=arcfour -N -L$2:localhost:$2 $1 
+
+open http://localhost:$2
