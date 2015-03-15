@@ -19,5 +19,16 @@ home=$HOME
 
 reldir=`echo $curdir | sed -e s+$HOME/++`
 
+# this is more complicated than I anticipated, what if
+# for instance I had done get host:myfile*/otherdir*/*.pdf
+# That's gonna get screwy...
+#things_to_fetch=`ssh $host "ls -d ~/$reldir/$thing"`
+#dirnames=$(for f in $things_to_fetch; do dirname $f; done | sort | uniq)
 
-scp -r $host:~/$reldir/$thing `dirname $thing`/
+if [ ! -d `dirname $thing` ]
+then
+    mkdir -p `dirname $thing`
+fi
+
+
+scp -r $host:~/$reldir/$thing `dirname "$thing"`/
